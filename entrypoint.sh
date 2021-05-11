@@ -19,7 +19,7 @@ then
 	exit 1
 fi
 
-# echo "login to gcloud with SA"
+echo "login to gcloud with SA"
 gcloud auth activate-service-account --key-file=/srv/gcloud/credentials.json
 
 # create login credential file
@@ -30,7 +30,7 @@ pg_dump -F c -Z 9 -h ${DB_HOST} -p 5432 -U ${DB_USER} ${DB_NAME} -f ${BACKUP_FIL
 BACKUP_SIZE=$(du ${BACKUP_FILE} | awk '{print $1}')
 echo "End backup"
 
-# ## copy to destination
+## copy to destination
 echo "Copy to gcs"
 gsutil cp ${BACKUP_FILE} gs://${GCS_BUCKET}/${DB_NAME}/${BACKUP_FILE} && gsutil cp ${BACKUP_FILE} gs://${GCS_BUCKET}/${DB_NAME}/${BACKUP_FILE_LATEST}
 
