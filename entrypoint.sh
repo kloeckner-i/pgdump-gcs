@@ -10,6 +10,7 @@ DB_HOST=${DB_HOST:-localhost}
 DB_PASSWORD=$(cat ${DB_PASSWORD_FILE})
 DB_USER=$(cat ${DB_USERNAME_FILE})
 CREDENTIALFILE=${CREDENTIALFILE:-/srv/gcloud/credentials.json}
+PROM_NAMESPACE=${PROM_NAMESPACE:-kci}
 
 if [ ! -f ${CREDENTIALFILE} ]
 then
@@ -18,7 +19,7 @@ then
 	exit 1
 fi
 
-echo "login to gcloud with SA"
+# echo "login to gcloud with SA"
 gcloud auth activate-service-account --key-file=/srv/gcloud/credentials.json
 
 # create login credential file
@@ -29,7 +30,7 @@ pg_dump -F c -Z 9 -h ${DB_HOST} -p 5432 -U ${DB_USER} ${DB_NAME} -f ${BACKUP_FIL
 BACKUP_SIZE=$(du ${BACKUP_FILE} | awk '{print $1}')
 echo "End backup"
 
-## copy to destination
+# ## copy to destination
 echo "Copy to gcs"
 gsutil cp ${BACKUP_FILE} gs://${GCS_BUCKET}/${DB_NAME}/${BACKUP_FILE} && gsutil cp ${BACKUP_FILE} gs://${GCS_BUCKET}/${DB_NAME}/${BACKUP_FILE_LATEST}
 
@@ -39,14 +40,14 @@ if [[ ! -z "$PROMETHEUS_PUSH_GATEWAY" ]];
 then
 echo "sending monitoring metrics to ${PROMETHEUS_PUSH_GATEWAY}"
 cat <<EOF | curl -s --data-binary @- http://${PROMETHEUS_PUSH_GATEWAY}/metrics/job/pgdump-gcs/source_type/postgresql/source_name/${DB_NAME}
-    # TYPE kci_backup_timestamp counter
-    # HELP kci_backup_timestamp Timestamp of last backup run
-    kci_backup_timestamp $END_TIMESTAMP
-    # TYPE kci_backup_duration gauge
-    # HELP kci_backup_duration Time the backup run take until finished
-    kci_backup_duration $BACKUP_DURATION
-    # TYPE kci_backup_size gauge
-    # HELP kci_backup_size Backup Size in bytes
-    kci_backup_size $BACKUP_SIZE
+    # TYPE ${PROM_NAMESPACE}_backup_timestamp counter
+    # HELP ${PROM_NAMESPACE}_backup_timestamp Timestamp of last backup run
+    ${PROM_NAMESPACE}_backup_timestamp $END_TIMESTAMP
+    # TYPE ${PROM_NAMESPACE}_backup_duration gauge
+    # HELP ${PROM_NAMESPACE}_backup_duration Time the backup run take until finished
+    ${PROM_NAMESPACE}_backup_duration $BACKUP_DURATION
+    # TYPE ${PROM_NAMESPACE}_backup_size gauge
+    # HELP ${PROM_NAMESPACE}_backup_size Backup Size in bytes
+    ${PROM_NAMESPACE}_backup_size $BACKUP_SIZE
 EOF
 fi

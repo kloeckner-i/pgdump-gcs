@@ -24,7 +24,4 @@ RUN apk --no-cache add \
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
-RUN adduser --disabled-password --gecos "pgdump" pgdump
-USER pgdump
-
 ENTRYPOINT /entrypoint.sh
