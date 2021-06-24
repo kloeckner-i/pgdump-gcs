@@ -1,11 +1,11 @@
 FROM postgres:11-alpine
-ARG CLOUD_SDK_VERSION=276.0.0
+ARG CLOUD_SDK_VERSION=339.0.0
 ENV CLOUD_SDK_VERSION=$CLOUD_SDK_VERSION
 
 ENV PATH /google-cloud-sdk/bin:$PATH
 RUN apk --no-cache add \
         curl \
-        python \
+        python3 \
         py-crcmod \
         bash \
         libc6-compat \
