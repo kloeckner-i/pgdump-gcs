@@ -4,6 +4,7 @@ set -e
 echo "Prepare configuration for script"
 TIMESTAMP=$(date +%F_%R)
 START_TIMESTAMP=$(date +%s)
+TEMP_FILE=temp.sql
 BACKUP_FILE=${DB_NAME}-${TIMESTAMP}.sql.gz
 BACKUP_FILE_LATEST=${DB_NAME}-latest.sql.gz
 DB_HOST=${DB_HOST:-localhost}
@@ -26,7 +27,9 @@ gcloud auth activate-service-account --key-file=/srv/gcloud/credentials.json
 (umask 377 && echo *:5432:*:${DB_USER}:${DB_PASSWORD} >> ~/.pgpass)
 
 echo "Start create backup"
-pg_dump -F c -Z 9 -h ${DB_HOST} -p 5432 -U ${DB_USER} ${DB_NAME} -f ${BACKUP_FILE}
+pg_dump -Fc -Z0 -h ${DB_HOST} -p 5432 -U ${DB_USER} ${DB_NAME} -f ${TEMP_FILE}
+gzip ${TEMP_FILE}
+mv ${TEMP_FILE}.gz ${BACKUP_FILE}
 BACKUP_SIZE=$(du ${BACKUP_FILE} | awk '{print $1}')
 echo "End backup"
 
