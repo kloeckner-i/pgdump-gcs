@@ -8,6 +8,7 @@ RUN apk --no-cache add \
         python3 \
         py-crcmod \
         bash \
+        postgresql-client \
         libc6-compat \
         openssh-client \
         git \
