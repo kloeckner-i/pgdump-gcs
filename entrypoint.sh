@@ -27,6 +27,10 @@ gcloud auth activate-service-account --key-file=/srv/gcloud/credentials.json
 (umask 377 && echo *:5432:*:${DB_USER}:${DB_PASSWORD} >> ~/.pgpass)
 
 echo "Start create backup"
+
+rm -rf /backup/*
+cd /backup            # pvc location
+
 pg_dump -Fc -Z0 -h ${DB_HOST} -p 5432 -U ${DB_USER} ${DB_NAME} -f ${TEMP_FILE}
 gzip ${TEMP_FILE}
 mv ${TEMP_FILE}.gz ${BACKUP_FILE}
